@@ -570,6 +570,20 @@ timeline.push(makeImageGridQuestion({
   ]
 }));
 
+      timeline.push(makeImageGridQuestion({
+  id: 'efficacy_3',
+  kc_trial: 'efficacy_3',
+  saveAs: 'efficacy_3',
+  prompt: 'The small things I do can make the environment better',
+  gridClass: 'kc-optgrid-5',
+  options: [
+    { value: "dont help",   label: "They don't help at all",   img: 'img/Really_dontlike.png' },
+    { value: 'bit bad',  label: "They don't help much",  img: 'img/Dont_like.png' },
+    { value: "maybe help",             label: "They can maybe help",             img: 'img/Not_sure.png' },
+    { value: 'help a little',       label: "They help a little",       img: 'img/Like_little.png' },
+    { value: 'help a lot',   label: "They help a lot",   img: 'img/Really_like.png' }
+  ]
+}));
 
       // ======= GAME (CIRCLES TASK) =======
       function boardHTML () {
@@ -1015,6 +1029,7 @@ var payload = {
   nature_importance: getLatestProp('nature_importance'),
   efficacy_1: getLatestProp('efficacy_1'),
   efficacy_2: getLatestProp('efficacy_2'),
+  efficacy_3: getLatestProp('efficacy_3'),
   item_ids: ITEMS.map(function(it){ return it.id; }),
   scores: scoresObj,
   total: total
