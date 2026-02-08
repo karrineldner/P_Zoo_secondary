@@ -651,6 +651,44 @@ function placeStartTiles () {
 
   try { setTimeout(setupAllRingHelpControls, 20); } catch(e){}
 }
+// ======= PLAY RING AUDIO ON DROP (NEW) =======
+function playRingAudio(which) {
+  try {
+    var id = (which === 'red')
+      ? 'kc-red-audio'
+      : (which === 'orange')
+        ? 'kc-orange-audio'
+        : (which === 'green')
+          ? 'kc-green-audio'
+          : null;
+
+    if (!id) return;
+
+    var audio = document.getElementById(id);
+    if (!audio) return;
+
+    // restart every time
+    try { audio.pause(); } catch(e){}
+    try { audio.currentTime = 0; } catch(e){}
+
+    var p = audio.play();
+    if (p && p.catch) {
+      p.catch(function(){
+        // fallback attempt (some browsers can be fussy)
+        try {
+          var src = audio.querySelector('source') ? audio.querySelector('source').src : null;
+          if (src) {
+            var a = new Audio(src);
+            try { a.currentTime = 0; } catch(e){}
+            a.play();
+          }
+        } catch(e){}
+      });
+    }
+  } catch (e) {
+    console.error('playRingAudio failed', e);
+  }
+}
 
 function enableDrag (el, board) {
   var ox=0, oy=0, dragging=false;
