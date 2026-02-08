@@ -190,6 +190,42 @@
       var timeline = [];
       var participantId = null; // set on Page 1
 
+      // ======= RESUME AFTER REFRESH (15 min) =======
+var KC_RESUME_KEY = 'KC_HABITATS_STATE_v1';
+var KC_RESUME_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+function kcSaveState() {
+  try {
+    var prog = jsPsych.progress(); // jsPsych 6
+    var state = {
+      t: Date.now(),
+      next_trial: (prog.current_trial_global || 0) + 1, // resume at next trial
+      participantId: participantId || null,
+      scores: Object.assign({}, SCORES || {}),
+      props: (jsPsych.data.get().values()[0] || {}) // includes nature_choice etc
+    };
+    localStorage.setItem(KC_RESUME_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function kcLoadState() {
+  try {
+    var raw = localStorage.getItem(KC_RESUME_KEY);
+    if (!raw) return null;
+    var state = JSON.parse(raw);
+    if (!state || !state.t) return null;
+    if (Date.now() - state.t > KC_RESUME_TTL_MS) {
+      localStorage.removeItem(KC_RESUME_KEY);
+      return null;
+    }
+    return state;
+  } catch (e) { return null; }
+}
+
+function kcClearState() {
+  try { localStorage.removeItem(KC_RESUME_KEY); } catch (e) {}
+}
+
       // Your images (folder: img/)
       var ITEMS = [
         { id:'kangaroo',   label:'kangaroo',   img:'img/Kangaroo.png' },
@@ -956,13 +992,44 @@ window.addEventListener('resize', function(){
       };
       timeline.push(final_thanks);
 
+      // ======= APPLY RESUME (if valid) =======
+var kc_state = kcLoadState();
+if (kc_state && typeof kc_state.next_trial === 'number') {
+  // restore participantId + scores
+  participantId = kc_state.participantId || participantId;
+  if (kc_state.scores) {
+    Object.keys(kc_state.scores).forEach(function(k){
+      SCORES[k] = kc_state.scores[k];
+    });
+  }
+
+  // restore jsPsych properties so your payload stays consistent
+  try {
+    if (kc_state.participantId) jsPsych.data.addProperties({ participantId: kc_state.participantId });
+    if (kc_state.props) jsPsych.data.addProperties(kc_state.props);
+  } catch(e) {}
+
+  // start from where they left off
+  timeline = timeline.slice(kc_state.next_trial);
+}
+
+
       // ======= INIT =======
-      jsPsych.init({
-        display_element: 'jspsych-target',
-        timeline: timeline,
-        default_iti: 0,
-        auto_preload: false
-      });
+jsPsych.init({
+  display_element: 'jspsych-target',
+  timeline: timeline,
+  default_iti: 0,
+  auto_preload: false,
+
+  on_trial_finish: function() {
+    kcSaveState();
+  },
+
+  on_finish: function() {
+    // once fully finished, clear resume so they don't jump back in later
+    kcClearState();
+  }
+});
     </script>
   </body>
 </html>
