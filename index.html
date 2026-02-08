@@ -14,14 +14,18 @@
 
     <style>
       :root{
-        /* board diameter: always fits in viewport */
+        /* board diameter */
         --size: min(92vmin, 920px);
 
-        /* white rim outside the red ring (space where your tiles sit) */
-        --white-margin: clamp(120px, 18vmin, 240px);
+        /*
+          IMPORTANT:
+          This will be overridden in JS to guarantee enough rim for the tiles.
+          These are just safe defaults.
+        */
+        --white-margin: clamp(220px, 26vmin, 360px);
 
-        /* ring thickness */
-        --band: clamp(60px, 8vmin, 110px);
+        /* ring thickness (also may be reduced by JS if needed) */
+        --band: clamp(46px, 6.5vmin, 90px);
 
         --red-diameter: calc(var(--size) - var(--white-margin));
         --orange-band: var(--band);
@@ -42,6 +46,7 @@
         place-items:center;
         overflow:visible;
       }
+
       .ring { position:absolute; border-radius:50%; left:50%; top:50%; transform:translate(-50%,-50%); pointer-events:none; }
       .ring.red    { background:#c21f1f; width:var(--red-diameter); height:var(--red-diameter); z-index:1; }
       .ring.orange { background:#ff7a21; width:calc(var(--red-diameter) - (2 * var(--orange-band))); height:calc(var(--red-diameter) - (2 * var(--orange-band))); z-index:1; }
@@ -280,9 +285,9 @@
 
       // Read responsive CSS vars so JS placement matches what is on screen
       var BOARD_SIZE   = cssPxVar('--size', 820);
-      var WHITE_MARGIN = cssPxVar('--white-margin', 240);
-      var ORANGE_BAND  = cssPxVar('--orange-band', 120);
-      var GREEN_BAND   = cssPxVar('--green-band', 24);
+      var WHITE_MARGIN = cssPxVar('--white-margin', 300);
+      var ORANGE_BAND  = cssPxVar('--orange-band', 80);
+      var GREEN_BAND   = cssPxVar('--green-band', 80);
 
       function computeRadii(boardEl) {
         boardEl = boardEl || document.getElementById('board');
@@ -302,6 +307,71 @@
         var rOrange = rRed - band;
         var rGreen  = rOrange - band;
         return { rRed: rRed, rOrange: rOrange, rGreen: rGreen };
+      }
+
+      // ======= AUTO-FIT: guarantee enough outer rim for tiles =======
+      function ensureOuterRimForTiles(board) {
+        try {
+          board = board || document.getElementById('board');
+          if (!board) return;
+
+          var root = document.documentElement;
+
+          // placeholder size used in placeStartTiles()
+          var tileW = 110, tileH = 110;
+          var tileHalf = Math.max(tileW, tileH) / 2; // ~55
+
+          var boardRect = board.getBoundingClientRect();
+          var boardDia = boardRect.width;
+          if (!isFinite(boardDia) || boardDia <= 0) return;
+
+          // Need rimThickness > 2*tileHalf + padding
+          var rimNeed = (2 * tileHalf) + 30;          // ~140px
+          var whiteMarginNeed = 2 * rimNeed;          // ~280px
+
+          var currentWhite = cssPxVar('--white-margin', whiteMarginNeed);
+          var currentBand  = cssPxVar('--band', 80);
+
+          // Minimum red diameter so 3 bands still fit comfortably.
+          // green diameter = red - 4*band. Keep green >= 140px.
+          var minGreen = 140;
+          var minRed = (4 * currentBand) + minGreen;
+
+          // If the needed white margin would make red too small, shrink band.
+          var maxWhiteAllowed = boardDia - minRed;
+
+          if (whiteMarginNeed > maxWhiteAllowed) {
+            // solve for band so that: boardDia - whiteMarginNeed >= 4*band + minGreen
+            var bandMax = (boardDia - whiteMarginNeed - minGreen) / 4;
+            if (!isFinite(bandMax)) bandMax = currentBand;
+            bandMax = Math.max(28, Math.min(currentBand, bandMax)); // don't go tiny
+            root.style.setProperty('--band', Math.round(bandMax) + 'px');
+            root.style.setProperty('--orange-band', Math.round(bandMax) + 'px');
+            root.style.setProperty('--green-band',  Math.round(bandMax) + 'px');
+
+            currentBand = bandMax;
+            minRed = (4 * currentBand) + minGreen;
+            maxWhiteAllowed = boardDia - minRed;
+          }
+
+          var finalWhite = Math.max(currentWhite, whiteMarginNeed);
+
+          // also don't exceed what's possible
+          if (isFinite(maxWhiteAllowed)) finalWhite = Math.min(finalWhite, maxWhiteAllowed);
+
+          // safety: never negative
+          finalWhite = Math.max(0, finalWhite);
+
+          root.style.setProperty('--white-margin', Math.round(finalWhite) + 'px');
+
+          // refresh cached JS vars
+          BOARD_SIZE   = cssPxVar('--size', 820);
+          WHITE_MARGIN = cssPxVar('--white-margin', finalWhite);
+          ORANGE_BAND  = cssPxVar('--orange-band', currentBand);
+          GREEN_BAND   = cssPxVar('--green-band', currentBand);
+        } catch (e) {
+          console.error('ensureOuterRimForTiles failed', e);
+        }
       }
 
       // ======= HELPERS =======
@@ -596,6 +666,9 @@
         var board = document.getElementById('board');
         if (!board) return;
 
+        // Ensure the rings shrink enough to make a guaranteed rim for tiles
+        ensureOuterRimForTiles(board);
+
         // remove existing placeholders
         var existing = board.querySelectorAll('.tile-placeholder');
         existing.forEach(function(el){ try { el.parentNode.removeChild(el); } catch(e){} });
@@ -611,25 +684,20 @@
         var rRed = (radii && isFinite(radii.rRed)) ? radii.rRed : ((Math.min(boardW, boardH) - WHITE_MARGIN) / 2);
         var boardRadius = Math.min(boardW, boardH) / 2;
 
-        // tile sizing (placeholder size)
         var tileW = 110, tileH = 110;
         var tileHalf = Math.max(tileW, tileH) / 2;
 
-        // ===== FIXED, ROBUST START RADIUS =====
-        // We want the tile CENTRES to be:
-        // - outside red ring: > rRed + tileHalf
-        // - inside board edge: < boardRadius - tileHalf
-        var minPR = rRed + tileHalf + 10;
-        var maxPR = boardRadius - tileHalf - 10;
+        // place centres in the available rim band: (rRed + tileHalf + padding) .. (boardRadius - tileHalf - padding)
+        var minPR = rRed + tileHalf + 12;
+        var maxPR = boardRadius - tileHalf - 12;
 
-        // If there isn't much white rim, fall back safely
+        // with ensureOuterRimForTiles this should always be valid, but keep guard anyway
         if (!isFinite(minPR) || !isFinite(maxPR) || maxPR <= minPR) {
-          minPR = Math.max(tileHalf + 10, boardRadius * 0.65);
-          maxPR = Math.max(minPR + 1, boardRadius - tileHalf - 10);
+          minPR = Math.max(tileHalf + 12, boardRadius * 0.65);
+          maxPR = Math.max(minPR + 1, boardRadius - tileHalf - 12);
         }
 
-        // Place closer to the OUTER edge of the rim (but still safe)
-        var placementRadius = minPR + (maxPR - minPR) * 0.75;
+        var placementRadius = minPR + (maxPR - minPR) * 0.80;
 
         var n = ITEMS.length;
         var angleStep = (Math.PI * 2) / n;
@@ -639,7 +707,6 @@
           var left = cx + (placementRadius * Math.cos(angle)) - (tileW/2);
           var top  = cy + (placementRadius * Math.sin(angle)) - (tileH/2);
 
-          // guard against NaN => avoids "stacking"
           if (!isFinite(left)) left = cx - (tileW/2);
           if (!isFinite(top))  top  = cy - (tileH/2);
 
@@ -862,13 +929,12 @@
         button_html: '<button class="jspsych-btn">%choice%</button>',
         on_load: function () {
           try {
+            // make sure CSS vars are adjusted after the board exists in the DOM
+            ensureOuterRimForTiles(document.getElementById('board'));
             placeStartTiles();
 
             window.addEventListener('resize', function(){
-              BOARD_SIZE   = cssPxVar('--size', 820);
-              WHITE_MARGIN = cssPxVar('--white-margin', 240);
-              ORANGE_BAND  = cssPxVar('--orange-band', 120);
-              GREEN_BAND   = cssPxVar('--green-band', 24);
+              ensureOuterRimForTiles(document.getElementById('board'));
               placeStartTiles();
             });
 
@@ -1051,4 +1117,3 @@
     </script>
   </body>
 </html>
-
