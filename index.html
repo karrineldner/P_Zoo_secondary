@@ -3,7 +3,6 @@
   <head>
     <title>Habitats Survey</title>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
     <!-- jsPsych 6.1.0 core + plugins -->
     <script src="jspsych-6.1.0/jspsych.js"></script>
@@ -13,68 +12,39 @@
     <link rel="stylesheet" href="jspsych-6.1.0/css/jspsych.css">
 
     <style>
-      /* ===== Responsive board sizing (keeps ring ratios identical) ===== */
-      :root{
-        /* Board scales to fit viewport but won't exceed original design size */
-        --size: min(92vmin, 920px);
-
-        /* Keep same proportion as 240/920 so ring geometry ratios stay constant */
-        --white-margin: calc(var(--size) * 0.2608695652);
-
-        --red-diameter: calc(var(--size) - var(--white-margin));
-        --band: calc(var(--red-diameter) / 6);
-        --orange-band: calc(var(--band) * 0.8);
-        --green-band: calc(var(--band) * 0.8);
-      }
-
+      :root { --size: 920px; --white-margin: 240px; --red-diameter: calc(var(--size) - var(--white-margin)); --band: calc(var(--red-diameter) / 6); --orange-band: calc(var(--band) * 0.8); --green-band: calc(var(--band) * 0.8); }
       html, body { background:#fff; color:#000; margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-      body { overflow-x:hidden; }
+      #jspsych-target { display:grid; place-items:center; min-height:100vh; }
 
-      /* Let content scroll on short screens (prevents prompt getting cut off) */
-      #jspsych-target {
-        min-height:100vh;
-        display:flex;
-        justify-content:center;
-        align-items:flex-start;
-        padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
-        box-sizing:border-box;
-      }
-
-      /* ===== Circles game layout ===== */
-      .wrap { display:flex; gap:24px; align-items:flex-start; padding:16px; flex-wrap:wrap; justify-content:center; }
+      .wrap { display:flex; gap:24px; align-items:flex-start; padding:16px; }
       .board { position:relative; width:var(--size); height:var(--size); background:#fff; border-radius:50%; display:grid; place-items:center; overflow:visible; }
-      .ring { position:absolute; border-radius:50%; left:50%; top:50%; transform:translate(-50%,-50%); pointer-events:none; }
+      .ring { position:absolute; border-radius:50%; left:50%; top:50%; transform:translate(-50%,-50%); }
       .ring.red    { background:#c21f1f; width:var(--red-diameter); height:var(--red-diameter); z-index:1; }
       .ring.orange { background:#ff7a21; width:calc(var(--red-diameter) - (2 * var(--orange-band))); height:calc(var(--red-diameter) - (2 * var(--orange-band))); z-index:1; }
       .ring.green  { background:#1aaa1a; width:calc(var(--red-diameter) - (2 * var(--orange-band)) - (2 * var(--green-band))); height:calc(var(--red-diameter) - (2 * var(--orange-band)) - (2 * var(--green-band))); z-index:1; }
       .center { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:calc(var(--red-diameter) - (6 * var(--band))); height:calc(var(--red-diameter) - (6 * var(--band))); border-radius:50%; background:var(--board-bg, #fff); z-index:1; }
-
-      .ring.active { filter: brightness(1.25); box-shadow: 0 0 18px rgba(0,0,0,0.25) inset; }
 
       .kc-ring-help { position:absolute; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.95); border:2px solid rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px; cursor:pointer; z-index:100000; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
       .kc-ring-help.kc-help-red    { color:#c21f1f; }
       .kc-ring-help.kc-help-orange { color:#ff7a21; }
       .kc-ring-help.kc-help-green  { color:#1aaa1a; }
 
-      .start-strip { width:220px; flex: 0 0 220px; }
-      .tiles { display:flex; flex-wrap:wrap; gap:8px; max-height:calc(var(--size) - 20px); overflow:auto; justify-content:center; }
+      .start-strip { width:220px; }
+      .tiles { display:flex; flex-wrap:wrap; gap:8px; max-height:calc(var(--size) - 20px); overflow:auto; }
       .tile { width:100px; height:100px; border-radius:14px; background:transparent; display:flex; align-items:center; justify-content:center; cursor:grab; touch-action:none; position: relative; z-index:300001; font-size: 26px; font-weight:700; }
       .tile img { width:100%; height:100%; object-fit:contain; border-radius:12px; pointer-events:none; border:0; outline:0; }
+
+      .ring { pointer-events:none; }
+      .ring.active { filter: brightness(1.25); box-shadow: 0 0 18px rgba(0,0,0,0.25) inset; }
 
       .item { position:absolute; width:130px; height:130px; border-radius:14px; background:transparent; display:flex; align-items:center; justify-content:center; cursor:grab; user-select:none; z-index:300000; }
       .item.dragging { opacity:.85; cursor:grabbing; }
       .item img { width:100%; height:100%; object-fit:contain; border-radius:12px; border:0; outline:0; }
 
+      .kc-tooltip { position:fixed !important; pointer-events:none !important; background:rgba(0,0,0,0.85); color:#fff; padding:6px 8px; border-radius:6px; z-index:2147483647 !important; transform:translate(8px,8px); will-change: transform; }
+
       .tile-placeholder { width:130px; height:130px; display:inline-block; vertical-align:top; border-radius:14px; background:transparent; }
 
-      /* Reflow on portrait/narrow screens: strip goes below board */
-      @media (max-width: 1000px){
-        .wrap{ flex-direction:column; align-items:center; }
-        .start-strip{ width: min(92vw, 680px); flex: 0 0 auto; }
-        .tiles{ max-height: 240px; }
-      }
-
-      /* ===== Buttons ===== */
       .jspsych-btn { background:#28a745; color:#fff; border-radius:8px; border: none; padding: 12px 18px; font-size:18px; min-width:140px; cursor:pointer; }
       .jspsych-content { color:#000; }
       .kc-continue-btn { background: #28a745 !important; color: #fff !important; border: none; }
@@ -100,33 +70,34 @@
       }
       .jspsych-btn.flag-btn:hover { transform: translateY(-1px); }
 
-      /* ===== Survey page styles (UPDATED to make images bigger) ===== */
-      .kc-qwrap {
-        width: min(1100px, 96vw);
-        margin: 0 auto;
-      }
-      .kc-qprompt {
-        font-size: clamp(1.2rem, 2.6vw, 1.8rem);
-        font-weight: 800;
-        margin: 0 0 14px 0;
-        line-height: 1.2;
-      }
+      /* ===== Survey page styles ===== */
+      .kc-qwrap { max-width: 820px; margin: 0 auto; }
+      .kc-qprompt { font-size: 1.5rem; font-weight: 800; margin: 0 0 14px 0; }
       .kc-qsub { font-size: 1rem; opacity: 0.9; margin: 0 0 14px 0; }
 
-      /* Keep the prompt visible and give the options room */
-      #kc-options { margin-top: 10px; }
+      .kc-textbox {
+        width: 100%;
+        max-width: 520px;
+        font-size: 1.2rem;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 2px solid rgba(0,0,0,0.18);
+        outline: none;
+      }
+      .kc-textbox:focus { border-color: rgba(40,167,69,0.9); box-shadow: 0 0 0 4px rgba(40,167,69,0.14); }
 
-      /* Page 2: fixed 3 columns but responsive (still 3 on wide screens) */
+      /* Page 2: fixed 3 columns grid */
       .kc-optgrid-3 {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 14px;
       }
+      .kc-optgrid-3 .kc-opt img { height: 150px; }
 
       /* Page 3: 5 options, responsive */
       .kc-optgrid-5 {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 14px;
       }
 
@@ -144,42 +115,27 @@
         border-color: rgba(40,167,69,0.9);
         box-shadow: 0 0 0 4px rgba(40,167,69,0.16);
       }
-
-      /* BIGGER IMAGES:
-         - uses viewport height while ensuring prompt isn't likely to be cut
-         - works for both 3-grid and 5-grid */
-      .kc-opt img {
-        width: 100%;
-        height: clamp(170px, 26vh, 320px);
-        object-fit: contain;
-        display:block;
-      }
+      .kc-opt img { width: 100%; height: 140px; object-fit: contain; display:block; }
       .kc-optlabel { margin-top: 10px; font-size: 1.05rem; font-weight: 700; text-align: center; }
 
-      /* On very short screens, reduce image height so prompt/buttons stay visible */
-      @media (max-height: 700px){
-        .kc-opt img { height: clamp(140px, 22vh, 260px); }
-      }
+      /* ===== LABEL POPUP + CLICK HIGHLIGHT (NEW) ===== */
+      .tile, .item { position: relative; } /* ensure label positioning works */
 
-      /* On narrow screens, allow 3-grid to become 2 columns if needed */
-      @media (max-width: 560px){
-        .kc-optgrid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      }
-
-      /* ===== LABEL POPUP + CLICK HIGHLIGHT ===== */
-      .tile, .item { position: relative; }
-
+      /* show label on hover */
       .tile:hover .kc-label,
       .item:hover .kc-label { opacity: 1; transform: translate(-50%, 0); }
 
+      /* keep label visible when clicked (selected) */
       .tile.selected .kc-label,
       .item.selected .kc-label { opacity: 1; transform: translate(-50%, 0); }
 
+      /* green outline highlight when clicked */
       .tile.selected, .item.selected {
         outline: 5px solid rgba(40,167,69,0.85);
         box-shadow: 0 0 0 6px rgba(40,167,69,0.18);
       }
 
+      /* label bubble */
       .kc-label {
         position: absolute;
         left: 50%;
@@ -192,7 +148,7 @@
         font-size: 16px;
         font-weight: 800;
         white-space: nowrap;
-        pointer-events: none;
+        pointer-events: none; /* don't interfere with dragging */
         opacity: 0;
         transition: opacity 120ms ease, transform 120ms ease;
         z-index: 999999;
@@ -201,7 +157,7 @@
   </head>
 
   <body>
-    <!-- Remote collector -->
+    <!-- Remote collector: update endpoint to your NEW Google Apps Script Web App URL -->
     <script>
       window.KC_REMOTE_ENDPOINT = window.KC_REMOTE_ENDPOINT || 'https://script.google.com/macros/s/AKfycbzr8dWDuoUhPtx8kzX9Xdwllk3CB0nnLK0Tjug7mG8bbnt9F8rGLaFb45-2D2dLrsrv/exec';
       window.KC_REMOTE_SECRET = window.KC_REMOTE_SECRET || 'TESTER';
@@ -212,8 +168,55 @@
     <script>
       // ======= GLOBALS / CONFIG =======
       var timeline = [];
-      var participantId = null;
+      var participantId = null; // set on Page 1
 
+      // ======= PERSISTENCE (NEW) =======
+      var KC_STATE_KEY = 'KC_HABITATS_STATE_V1';
+      var KC_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+      function kcNow(){ return Date.now(); }
+
+      function kcLoadRaw() {
+        try { return JSON.parse(localStorage.getItem(KC_STATE_KEY) || 'null'); }
+        catch(e){ return null; }
+      }
+
+      function kcIsFresh(st) {
+        if (!st || !st.saved_at) return false;
+        return (kcNow() - st.saved_at) <= KC_TTL_MS;
+      }
+
+      function kcGetState() {
+        var st = kcLoadRaw();
+        if (!kcIsFresh(st)) return null;
+        return st;
+      }
+
+      // merges into st.extra
+      function kcSaveState(extraPatch, patchTopLevel) {
+        try {
+          var st = kcLoadRaw() || {};
+          st.extra = st.extra || {};
+          if (extraPatch && typeof extraPatch === 'object') {
+            Object.keys(extraPatch).forEach(function(k){
+              st.extra[k] = extraPatch[k];
+            });
+          }
+          if (patchTopLevel && typeof patchTopLevel === 'object') {
+            Object.keys(patchTopLevel).forEach(function(k){
+              st[k] = patchTopLevel[k];
+            });
+          }
+          st.saved_at = kcNow();
+          localStorage.setItem(KC_STATE_KEY, JSON.stringify(st));
+        } catch(e){}
+      }
+
+      function kcClearState(){
+        try { localStorage.removeItem(KC_STATE_KEY); } catch(e){}
+      }
+
+      // Your images (folder: img/)
       var ITEMS = [
         { id:'kangaroo',   label:'kangaroo',   img:'img/Kangaroo.png' },
         { id:'city',       label:'city',       img:'img/City.png' },
@@ -221,7 +224,7 @@
         { id:'forest',     label:'forest',     img:'img/Forest.png' },
         { id:'friends',    label:'friends',    img:'img/Friends.png' },
         { id:'giraffe',    label:'giraffe',    img:'img/Giraffe.png' },
-        { id:'black_cockatoo', label:'black cockatoo', img:'img/Black Cockatoo.png' },
+        { id:'black_cockatoo',      label:'black cockatoo',      img:'img/Black Cockatoo.png' },
         { id:'park',       label:'park',       img:'img/Park.png' },
         { id:'beetle',     label:'beetle',     img:'img/Black beetle.png' },
         { id:'bandicoot',  label:'bandicoot',  img:'img/Bandicoot.png' },
@@ -238,6 +241,11 @@
         { id:'peacock',    label:'peacock',    img:'img/Peacock.png' },
       ];
 
+      // Must mirror CSS custom properties
+      var BOARD_SIZE   = 820;  // px (diameter)
+      var WHITE_MARGIN = 240;  // outer white band width (px)
+
+      // per-item scores (initialized to 0)
       var SCORES = {};
       ITEMS.forEach(function(it){ SCORES[it.id] = 0; });
       ITEMS.forEach(function(it){ try { window[it.id + 'Score'] = 0; } catch(e){} });
@@ -246,100 +254,21 @@
         if (!(itemId in SCORES)) SCORES[itemId] = 0;
         SCORES[itemId] = score;
         try { window[itemId + 'Score'] = score; } catch(e){}
+
+        // NEW: persist scores as they change
+        try {
+          kcSaveState({ scores: Object.assign({}, SCORES) });
+        } catch(e){}
       }
 
-      // ======= RESUME / AUTOSAVE (NEW) =======
-var KC_STORAGE_KEY = 'KC_HABITATS_AUTOSAVE_V1';
-var KC_RESUME_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
-
-// we’ll update these while the experiment runs
-window.KC_CURRENT_TRIAL_INDEX = 0;     // where we are in the timeline
-window.KC_CURRENT_TRIAL_TAG = null;    // optional label
-window.KC_PLACEMENTS = {};             // per item: { score, left, top, inBoard, ring }
-
-// small helper
-function kcNow(){ return Date.now(); }
-
-function kcGetState() {
-  try {
-    var raw = localStorage.getItem(KC_STORAGE_KEY);
-    if (!raw) return null;
-    var st = JSON.parse(raw);
-    if (!st || !st.savedAt) return null;
-    if (kcNow() - st.savedAt > KC_RESUME_WINDOW_MS) return null; // too old
-    return st;
-  } catch(e) { return null; }
-}
-
-function kcSaveState(extra) {
-  try {
-    var st = {
-      savedAt: kcNow(),
-      participantId: participantId || null,
-
-      // resume position
-      trialIndex: window.KC_CURRENT_TRIAL_INDEX || 0,
-      trialTag: window.KC_CURRENT_TRIAL_TAG || null,
-
-      // data + key game state
-      SCORES: Object.assign({}, SCORES),
-      placements: Object.assign({}, window.KC_PLACEMENTS || {}),
-      item_order: window.KC_ITEM_ORDER ? window.KC_ITEM_ORDER.slice() : null,
-
-      // jsPsych data so far (handy if you want it)
-      jspsychData: (function(){
-        try { return jsPsych.data.get().values(); } catch(e){ return null; }
-      })()
-    };
-
-    // allow callers to store partial responses (e.g., a clicked option before Continue)
-    if (extra && typeof extra === 'object') {
-      st.extra = Object.assign({}, st.extra || {}, extra);
-    }
-
-    localStorage.setItem(KC_STORAGE_KEY, JSON.stringify(st));
-  } catch(e) {
-    // ignore (private mode etc.)
-  }
-}
-
-function kcClearState() {
-  try { localStorage.removeItem(KC_STORAGE_KEY); } catch(e){}
-}
-
-// save just before unload as a last safety net
-window.addEventListener('beforeunload', function(){
-  kcSaveState();
-});
-
-// optional: tiny “resumed” banner
-function kcShowResumeNotice(txt) {
-  try {
-    var el = document.createElement('div');
-    el.textContent = txt || 'Resumed your session';
-    el.style.position = 'fixed';
-    el.style.left = '12px';
-    el.style.bottom = '12px';
-    el.style.padding = '8px 10px';
-    el.style.background = 'rgba(0,0,0,0.75)';
-    el.style.color = '#fff';
-    el.style.borderRadius = '8px';
-    el.style.zIndex = 999999;
-    document.body.appendChild(el);
-    setTimeout(function(){ try { el.remove(); } catch(e){} }, 2500);
-  } catch(e){}
-}
       function cssPxVar(name, fallback) {
         var val = getComputedStyle(document.documentElement).getPropertyValue(name);
         if (!val) return fallback;
         return parseFloat(val);
       }
 
-      // These are derived from CSS; we refresh them when needed
-      var BOARD_SIZE   = cssPxVar('--size', 820);
-      var WHITE_MARGIN = cssPxVar('--white-margin', 240);
-      var ORANGE_BAND  = cssPxVar('--orange-band', 120);
-      var GREEN_BAND   = cssPxVar('--green-band', 24);
+      var ORANGE_BAND = cssPxVar('--orange-band', 120);
+      var GREEN_BAND  = cssPxVar('--green-band', 24);
 
       function computeRadii(boardEl) {
         boardEl = boardEl || document.getElementById('board');
@@ -391,7 +320,7 @@ function kcShowResumeNotice(txt) {
         try { showError('Error: ' + (ev.error && ev.error.message ? ev.error.message : ev.message)); } catch(e){}
       });
 
-      // ======= LABEL / CLICK HIGHLIGHT HELPERS =======
+      // ======= LABEL / CLICK HIGHLIGHT HELPERS (NEW) =======
       function ensureLabel(el, labelText) {
         if (!el) return;
         var badge = el.querySelector('.kc-label');
@@ -414,13 +343,16 @@ function kcShowResumeNotice(txt) {
 
         ensureLabel(el, labelText);
 
+        // click: select + keep label visible
         el.addEventListener('click', function(e){
+          // ignore click if we're in the middle of dragging
           if (el.classList.contains('dragging')) return;
           e.stopPropagation();
           clearAllSelected();
           el.classList.add('selected');
         });
 
+        // keyboard accessibility (optional): Enter/Space selects
         el.setAttribute('tabindex', '0');
         el.addEventListener('keydown', function(e){
           if (e.key === 'Enter' || e.key === ' ') {
@@ -433,6 +365,7 @@ function kcShowResumeNotice(txt) {
 
       // ======= RANDOMISATION HELPERS =======
       function shuffleArray(arr) {
+        // Fisher–Yates shuffle (in-place)
         for (var i = arr.length - 1; i > 0; i--) {
           var j = Math.floor(Math.random() * (i + 1));
           var tmp = arr[i];
@@ -457,9 +390,19 @@ function kcShowResumeNotice(txt) {
           response_ends_trial: false,
           data: { kc_trial: 'pid_entry' },
           on_load: function() {
+            // NEW: if state exists, prefill and allow continue
+            var st = kcGetState();
+            var priorPid = st && st.participantId ? st.participantId : null;
+
             var input = document.getElementById('kc-pid-input');
             var btn = document.getElementById('kc-pid-continue');
             if (!input || !btn) return;
+
+            if (priorPid) {
+              input.value = priorPid;
+              btn.disabled = false;
+              btn.style.display = '';
+            }
 
             function update() {
               var v = (input.value || '').trim();
@@ -479,6 +422,10 @@ function kcShowResumeNotice(txt) {
 
             btn.addEventListener('click', function(){
               participantId = (input.value || '').trim();
+
+              // NEW: persist participantId top-level
+              kcSaveState(null, { participantId: participantId });
+
               try { jsPsych.data.addProperties({ participantId: participantId }); } catch(e){}
               try { jsPsych.finishTrial(); } catch(e){}
             });
@@ -513,9 +460,10 @@ function kcShowResumeNotice(txt) {
             var contBtn = document.getElementById('kc-continue-btn');
             if (!optsEl || !contBtn) return;
 
+            // make a copy so we never mutate q.options
             var opts = (q.options || []).map(function(opt, i){
               var copy = Object.assign({}, opt);
-              copy._orig_index = i;
+              copy._orig_index = i; // keep where it was in the original array
               return copy;
             });
 
@@ -525,6 +473,11 @@ function kcShowResumeNotice(txt) {
 
             window.KC_OPTION_ORDER = opts.map(function(o){ return o.value; });
 
+            // NEW: preselect from saved state (if exists)
+            var st = kcGetState();
+            var savedAns = st && st.extra && st.extra.answers ? st.extra.answers : {};
+            var preValue = savedAns[q.saveAs || q.id] || null;
+
             opts.forEach(function(opt, displayIdx){
               var d = document.createElement('div');
               d.className = 'kc-opt';
@@ -533,6 +486,20 @@ function kcShowResumeNotice(txt) {
               d.innerHTML =
                 '<img src="' + opt.img + '" alt="' + (opt.label || opt.value) + '">' +
                 (opt.label ? ('<div class="kc-optlabel">' + opt.label + '</div>') : '');
+
+              // preselect highlight
+              if (preValue && opt.value === preValue) {
+                d.classList.add('selected');
+                window.KC_LAST_SELECTION = {
+                  value: opt.value,
+                  label: opt.label || '',
+                  img: opt.img,
+                  option_index: displayIdx,
+                  original_index: opt._orig_index
+                };
+                contBtn.disabled = false;
+                contBtn.style.display = '';
+              }
 
               d.addEventListener('click', function(){
                 try {
@@ -548,36 +515,21 @@ function kcShowResumeNotice(txt) {
                   option_index: displayIdx,
                   original_index: opt._orig_index
                 };
-  // NEW: autosave immediately on click
-  kcSaveState({ lastGrid: { questionId: q.id, selection: window.KC_LAST_SELECTION } });
+
+                // ===== NEW: save answer immediately (THIS FIXES YOUR MISSING NATURE FIELDS) =====
+                try {
+                  var st2 = kcGetState();
+                  var a = (st2 && st2.extra && st2.extra.answers) ? st2.extra.answers : {};
+                  a[q.saveAs || q.id] = opt.value;
+                  kcSaveState({ answers: a });
+                } catch(e){}
+
                 contBtn.disabled = false;
                 contBtn.style.display = '';
               });
 
               optsEl.appendChild(d);
             });
-// NEW: restore selection if this question was already answered (even if Continue wasn't clicked)
-var st = kcGetState && kcGetState();
-var saved = st && st.extra && st.extra.lastGrid;
-
-if (saved && saved.questionId === q.id && saved.selection && saved.selection.value) {
-  var v = saved.selection.value;
-
-  // highlight the previously chosen option
-  var selEl = optsEl.querySelector('[data-value="' + v + '"]');
-  if (selEl) {
-    try {
-      // clear any existing selection and select this one
-      optsEl.querySelectorAll('.kc-opt').forEach(function(x){ x.classList.remove('selected'); });
-      selEl.classList.add('selected');
-    } catch(e){}
-
-    // restore selection object + show Continue
-    window.KC_LAST_SELECTION = saved.selection;
-    contBtn.disabled = false;
-    contBtn.style.display = '';
-  }
-}
 
             contBtn.addEventListener('click', function(){
               try { jsPsych.finishTrial(); } catch(e){}
@@ -592,7 +544,6 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
             data.response_index = sel ? sel.option_index : null;
             data.response_original_index = sel ? sel.original_index : null;
             data.response_img = sel ? sel.img : null;
-
             data.option_order = window.KC_OPTION_ORDER ? window.KC_OPTION_ORDER.slice() : null;
 
             try {
@@ -644,12 +595,12 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
         ]
       }));
 
-      // ======= GAME (CIRCLES TASK) =======
+      // ======= GAME (YOUR EXISTING CIRCLES TASK) =======
       function boardHTML () {
         return '' +
-          '<div style="max-width:1200px;margin:0 auto;padding:8px;box-sizing:border-box;width:100%">' +
+          '<div style="max-width:820px;margin:0 auto;padding:8px">' +
             '<div class="wrap">' +
-              '<div class="board" id="board">' +
+              '<div class="board" id="board" style="width:'+BOARD_SIZE+'px;height:'+BOARD_SIZE+'px;">' +
                 '<div class="ring red"></div>' +
                 '<div class="ring orange"></div>' +
                 '<div class="ring green"></div>' +
@@ -667,36 +618,6 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
               '</div>' +
             '</div>' +
           '</div>';
-      }
-
-      function playRingAudio(which) {
-        // which: 'red' | 'orange' | 'green'
-        var ids = { red: 'kc-red-audio', orange: 'kc-orange-audio', green: 'kc-green-audio' };
-        var id = ids[which];
-        if (!id) return;
-
-        try {
-          // stop all ring audios first
-          ['kc-red-audio','kc-orange-audio','kc-green-audio'].forEach(function(aid){
-            var a = document.getElementById(aid);
-            if (a) { try { a.pause(); a.currentTime = 0; } catch(e){} }
-          });
-
-          var audio = document.getElementById(id);
-          if (!audio) return;
-
-          // play from start every time
-          try { audio.currentTime = 0; } catch(e){}
-
-          var p = audio.play();
-          if (p && p.then) p.catch(function(){
-            // iOS can be picky—fallback to new Audio
-            try {
-              var src = audio.querySelector('source') ? audio.querySelector('source').src : null;
-              if (src) { var tmp = new Audio(src); tmp.play(); }
-            } catch(e){}
-          });
-        } catch(e){}
       }
 
       function setupRingHelpControl(helpId, audioId, bandOuterRadiusName, bandInnerRadiusName, angleRadians, yOffsetPixels) {
@@ -740,12 +661,6 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
       }
 
       function placeStartTiles () {
-        // Refresh CSS-driven values (important on rotation)
-        BOARD_SIZE   = cssPxVar('--size', 820);
-        WHITE_MARGIN = cssPxVar('--white-margin', 240);
-        ORANGE_BAND  = cssPxVar('--orange-band', 120);
-        GREEN_BAND   = cssPxVar('--green-band', 24);
-
         var board = document.getElementById('board');
         if (!board) return;
 
@@ -769,8 +684,28 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
         var preferR = rRed + (boardRadius - rRed) * 0.6;
         var placementRadius = Math.max(minR, Math.min(preferR, maxR));
 
-        var shuffledItems = shuffleArray(ITEMS.slice());
+        // ======= RANDOMISE WHICH ITEM GOES TO WHICH ANGLE =======
+        // NEW: if we have a saved order, reuse it (so refresh recreates same layout)
+        var st = kcGetState();
+        var savedOrder = st && st.extra && st.extra.item_order ? st.extra.item_order : null;
+
+        var shuffledItems;
+        if (savedOrder && Array.isArray(savedOrder) && savedOrder.length === ITEMS.length) {
+          shuffledItems = savedOrder.map(function(id){
+            return ITEMS.find(function(it){ return it.id === id; });
+          }).filter(Boolean);
+
+          // fallback if any missing
+          if (shuffledItems.length !== ITEMS.length) {
+            shuffledItems = shuffleArray(ITEMS.slice());
+          }
+        } else {
+          shuffledItems = shuffleArray(ITEMS.slice());
+        }
+
         window.KC_ITEM_ORDER = shuffledItems.map(function(it){ return it.id; });
+        // persist order immediately
+        kcSaveState({ item_order: window.KC_ITEM_ORDER.slice() });
 
         var n = shuffledItems.length;
         var angleStep = (Math.PI * 2) / n;
@@ -811,6 +746,16 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
           board.appendChild(placeholder);
           enableDrag(t, board);
         });
+
+        // NEW: if we have saved scores, restore them (and positions will be as user left them only if you implement position saving; here we restore scores only)
+        try {
+          var st2 = kcGetState();
+          if (st2 && st2.extra && st2.extra.scores) {
+            Object.keys(st2.extra.scores).forEach(function(id){
+              setItemScore(id, st2.extra.scores[id]);
+            });
+          }
+        } catch(e){}
 
         try { setTimeout(setupAllRingHelpControls, 20); } catch(e){}
       }
@@ -874,9 +819,9 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
 
           var radii = computeRadii(board);
           clearRingHighlights();
-          if (dist <= radii.rGreen)       { var ringG = board.querySelector('.ring.green');  if (ringG) ringG.classList.add('active'); }
-          else if (dist <= radii.rOrange) { var ringO = board.querySelector('.ring.orange'); if (ringO) ringO.classList.add('active'); }
-          else if (dist <= radii.rRed)    { var ringR = board.querySelector('.ring.red');    if (ringR) ringR.classList.add('active'); }
+          if (dist <= radii.rGreen)       { var ring = board.querySelector('.ring.green');  if (ring) ring.classList.add('active'); }
+          else if (dist <= radii.rOrange) { var ring = board.querySelector('.ring.orange'); if (ring) ring.classList.add('active'); }
+          else if (dist <= radii.rRed)    { var ring = board.querySelector('.ring.red');    if (ring) ring.classList.add('active'); }
         }
 
         function up (e) {
@@ -927,8 +872,11 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
             var ring = board.querySelector('.ring.' + which);
             if (ring) ring.classList.add('active');
 
-            // NEW: play ring instructions every time an item is dropped into a ring
-            playRingAudio(which);
+            // NEW: persist scores snapshot + last drop info
+            kcSaveState({
+              scores: Object.assign({}, SCORES),
+              last_drop: { item: dataId, ring: which, at: kcNow() }
+            });
           } else {
             try {
               el.classList.remove('item');
@@ -942,6 +890,8 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
               if (original.parent) original.parent.appendChild(el);
             } catch (err) { console.error('restore failed', err); }
             setItemScore(dataId, 0);
+
+            kcSaveState({ scores: Object.assign({}, SCORES) });
           }
 
           dragEl.classList.remove('dragging');
@@ -1003,16 +953,13 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
           try {
             placeStartTiles();
 
-            // Clear pinned selection when clicking empty board
+            // clicking the empty board clears pinned selection
             var board = document.getElementById('board');
             if (board) {
-              board.addEventListener('click', function(){ clearAllSelected(); });
+              board.addEventListener('click', function(){
+                clearAllSelected();
+              });
             }
-
-            // Reposition help controls on orientation change / resize
-            window.addEventListener('resize', function(){
-              try { setTimeout(setupAllRingHelpControls, 50); } catch(e){}
-            });
 
             window.kc_monitor_interval = window.kc_monitor_interval || setInterval(function(){
               try {
@@ -1071,13 +1018,15 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
             var scoresObj = Object.assign({}, SCORES);
             var total = ITEMS.reduce(function(acc,it){ return acc + (scoresObj[it.id] || 0); }, 0);
 
-            var props = {};
-            try { props = jsPsych.data.get().values()[0] || {}; } catch(e){}
+            // ===== NEW: read survey answers from persistent state (not jsPsych memory) =====
+            var st = null, answers = {};
+            try { st = kcGetState(); } catch(e){}
+            answers = (st && st.extra && st.extra.answers) ? st.extra.answers : {};
 
             var payload = {
               participantId: participantId,
-              nature_choice: props.nature_choice || null,
-              nature_importance: props.nature_importance || null,
+              nature_choice: answers.nature_choice || null,
+              nature_importance: answers.nature_importance || null,
               item_ids: ITEMS.map(function(it){ return it.id; }),
               scores: scoresObj,
               total: total
@@ -1093,6 +1042,9 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
             postResultsToServer(endpoint, secret, payload).then(function(){
               window.KC_SUBMIT_DONE = true;
               window.KC_SUBMIT_ERROR = null;
+
+              // NEW: clear state after successful submit (optional; keeps people from resuming after finishing)
+              kcClearState();
             }).catch(function(err){
               window.KC_SUBMIT_DONE = true;
               window.KC_SUBMIT_ERROR = (err && err.message) ? err.message : String(err);
@@ -1151,59 +1103,54 @@ if (saved && saved.questionId === q.id && saved.selection && saved.selection.val
       };
       timeline.push(final_thanks);
 
+      // ======= RESUME LOGIC (NEW) =======
+      // We resume by slicing the timeline from the last completed trial index.
+      var resumeIndex = 0;
+      try {
+        var st0 = kcGetState();
+        if (st0 && typeof st0.progress_index === 'number') {
+          resumeIndex = Math.max(0, Math.min(st0.progress_index, timeline.length));
+        }
+        if (st0 && st0.participantId) {
+          participantId = st0.participantId;
+        }
+        // restore scores (so total+payload will match) even before game runs
+        if (st0 && st0.extra && st0.extra.scores) {
+          Object.keys(st0.extra.scores).forEach(function(id){
+            SCORES[id] = st0.extra.scores[id];
+            try { window[id + 'Score'] = SCORES[id]; } catch(e){}
+          });
+        }
+        // rehydrate jsPsych properties from saved answers (optional but good)
+        if (st0 && st0.extra && st0.extra.answers) {
+          try { jsPsych.data.addProperties(st0.extra.answers); } catch(e){}
+        }
+        if (participantId) {
+          try { jsPsych.data.addProperties({ participantId: participantId }); } catch(e){}
+        }
+      } catch(e){}
+
       // ======= INIT =======
+      jsPsych.init({
+        display_element: 'jspsych-target',
+        timeline: timeline.slice(resumeIndex),
+        default_iti: 0,
+        auto_preload: false,
 
-      // ======= RESUME: adjust timeline start (NEW) =======
-var kcState = kcGetState();
-var kcStartIndex = 0;
-
-if (kcState) {
-  // restore participantId + scores immediately (so later trials see it)
-  participantId = kcState.participantId || participantId;
-
-  if (kcState.SCORES) {
-    Object.keys(kcState.SCORES).forEach(function(k){
-      if (k in SCORES) SCORES[k] = kcState.SCORES[k];
-    });
-  }
-
-  window.KC_PLACEMENTS = kcState.placements || {};
-  window.KC_ITEM_ORDER = kcState.item_order || window.KC_ITEM_ORDER;
-
-  kcStartIndex = Math.max(0, kcState.trialIndex || 0);
-}
-
-jsPsych.init({
-  display_element: 'jspsych-target',
-  timeline: timeline.slice(kcStartIndex),   // <-- NEW
-  default_iti: 0,
-  auto_preload: false,
-
-  on_trial_start: function(){
-    try {
-      // This index is relative to the sliced timeline; convert back to global
-      var prog = jsPsych.progress();
-      var localIdx = prog.current_trial_global; // within the sliced timeline
-      window.KC_CURRENT_TRIAL_INDEX = kcStartIndex + localIdx;
-    } catch(e){}
-    kcSaveState(); // checkpoint at the start of each trial
-  },
-
-  on_trial_finish: function(){
-    try {
-      var prog = jsPsych.progress();
-      var localIdx = prog.current_trial_global;
-      window.KC_CURRENT_TRIAL_INDEX = kcStartIndex + localIdx + 1; // next trial
-    } catch(e){}
-    kcSaveState(); // checkpoint at the end of each trial
-  },
-
-  on_finish: function(){
-    // experiment completed — clear autosave
-    kcClearState();
-  }
-});
-if (kcState) kcShowResumeNotice('Resumed your session');
+        // NEW: after each trial finishes, save progress index
+        on_trial_finish: function() {
+          try {
+            // progress_index = number of trials completed in the ORIGINAL full timeline
+            // = resumeIndex + jsPsych.progress().current_trial_global
+            var pg = jsPsych.progress();
+            var completed = resumeIndex + (pg && typeof pg.current_trial_global === 'number' ? pg.current_trial_global : 0);
+            kcSaveState(
+              { scores: Object.assign({}, SCORES) },
+              { participantId: participantId || null, progress_index: completed + 1 } // +1 means "next trial"
+            );
+          } catch(e){}
+        }
+      });
     </script>
   </body>
 </html>
