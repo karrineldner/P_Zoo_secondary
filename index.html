@@ -544,7 +544,7 @@ timeline.push(makeImageGridQuestion({
   id: 'efficacy_1',
   kc_trial: 'efficacy_1',
   saveAs: 'efficacy_1',
-  prompt: 'I can help nature by my actions',
+  prompt: 'I can help the environment by what I do',
   gridClass: 'kc-optgrid-5',
   options: [
     { value: "I couldn't help at all",   label: "I couldn't help at all",   img: 'img/Really_dontlike.png' },
@@ -554,6 +554,22 @@ timeline.push(makeImageGridQuestion({
     { value: 'I could help very much',   label: 'I could help very much',   img: 'img/Really_like.png' }
   ]
 }));
+
+      timeline.push(makeImageGridQuestion({
+  id: 'efficacy_2',
+  kc_trial: 'efficacy_2',
+  saveAs: 'efficacy_2',
+  prompt: 'I think I would be good at helping the animals and plants that live near me',
+  gridClass: 'kc-optgrid-5',
+  options: [
+    { value: "very bad",   label: "I would be very bad",   img: 'img/Really_dontlike.png' },
+    { value: 'bit bad',  label: "I'd be a little bit bad",  img: 'img/Dont_like.png' },
+    { value: "I'm not sure",             label: "I'm not sure",             img: 'img/Not_sure.png' },
+    { value: 'bit good',       label: "I'd be a  bit good",       img: 'img/Like_little.png' },
+    { value: 'very good',   label: "I'd be very good",   img: 'img/Really_like.png' }
+  ]
+}));
+
 
       // ======= GAME (CIRCLES TASK) =======
       function boardHTML () {
@@ -998,6 +1014,7 @@ var payload = {
   nature_choice: getLatestProp('nature_choice'),
   nature_importance: getLatestProp('nature_importance'),
   efficacy_1: getLatestProp('efficacy_1'),
+  efficacy_2: getLatestProp('efficacy_2'),
   item_ids: ITEMS.map(function(it){ return it.id; }),
   scores: scoresObj,
   total: total
