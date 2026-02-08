@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Habitats Survey</title>
     <meta charset="utf-8" />
 
@@ -12,7 +13,20 @@
     <link rel="stylesheet" href="jspsych-6.1.0/css/jspsych.css">
 
     <style>
-      :root { --size: 920px; --white-margin: 240px; --red-diameter: calc(var(--size) - var(--white-margin)); --band: calc(var(--red-diameter) / 6); --orange-band: calc(var(--band) * 0.8); --green-band: calc(var(--band) * 0.8); }
+      :root{
+  /* board diameter: always fits in viewport */
+  --size: min(92vmin, 920px);
+
+  /* white rim outside the red ring (space where your tiles sit) */
+  --white-margin: clamp(120px, 18vmin, 240px);
+
+  /* ring thickness: increase this to make rings "wider" */
+  --band: clamp(60px, 8vmin, 110px);
+
+  --red-diameter: calc(var(--size) - var(--white-margin));
+  --orange-band: var(--band);
+  --green-band: var(--band);
+}
       html, body { background:#fff; color:#000; margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
       #jspsych-target { display:grid; place-items:center; min-height:100vh; }
 
@@ -153,6 +167,12 @@
         transition: opacity 120ms ease, transform 120ms ease;
         z-index: 999999;
       }
+      /* iPad / narrow screens: stack tiles strip under the circle so it fits */
+@media (max-width: 900px){
+  .wrap{ flex-direction: column; align-items: center; }
+  .start-strip{ width: min(92vmin, 520px); }
+  .tiles{ max-height: 240px; }
+}
     </style>
   </head>
 
@@ -195,10 +215,6 @@
         { id:'peacock',    label:'peacock',    img:'img/Peacock.png' },
       ];
 
-      // Must mirror CSS custom properties
-      var BOARD_SIZE   = 820;  // px (diameter)
-      var WHITE_MARGIN = 240;  // outer white band width (px)
-
       // per-item scores (initialized to 0)
       var SCORES = {};
       ITEMS.forEach(function(it){ SCORES[it.id] = 0; });
@@ -210,11 +226,15 @@
         try { window[itemId + 'Score'] = score; } catch(e){}
       }
 
-      function cssPxVar(name, fallback) {
-        var val = getComputedStyle(document.documentElement).getPropertyValue(name);
-        if (!val) return fallback;
-        return parseFloat(val);
-      }
+function cssPxVar(name, fallback) {
+  var val = getComputedStyle(document.documentElement).getPropertyValue(name);
+  if (!val) return fallback;
+  return parseFloat(val);
+}
+
+// Read responsive CSS vars so JS placement matches what is on screen
+var BOARD_SIZE   = cssPxVar('--size', 820);
+var WHITE_MARGIN = cssPxVar('--white-margin', 240);
 
       var ORANGE_BAND = cssPxVar('--orange-band', 120);
       var GREEN_BAND  = cssPxVar('--green-band', 24);
@@ -470,7 +490,7 @@
         return '' +
           '<div style="max-width:820px;margin:0 auto;padding:8px">' +
             '<div class="wrap">' +
-              '<div class="board" id="board" style="width:'+BOARD_SIZE+'px;height:'+BOARD_SIZE+'px;">' +
+              '<div class="board" id="board">' +
                 '<div class="ring red"></div>' +
                 '<div class="ring orange"></div>' +
                 '<div class="ring green"></div>' +
@@ -549,10 +569,8 @@
         var tileW = 110, tileH = 110;
         var tileRadius = Math.max(tileW, tileH) / 2.5;
 
-        var maxR = boardRadius - tileRadius - 4;
-        var minR = rRed + tileRadius + 8;
-        var preferR = rRed + (boardRadius - rRed) * 0.6;
-        var placementRadius = Math.max(minR, Math.min(preferR, maxR));
+   // place tiles near the OUTER edge of the whole board
+var placementRadius = boardRadius - tileRadius - 8;
 
         var n = ITEMS.length;
         var angleStep = (Math.PI * 2) / n;
@@ -785,6 +803,12 @@
         on_load: function () {
           try {
             placeStartTiles();
+            
+    window.addEventListener('resize', function(){
+      BOARD_SIZE   = cssPxVar('--size', 820);
+      WHITE_MARGIN = cssPxVar('--white-margin', 240);
+      placeStartTiles();
+    });
 
             // NEW: clicking the empty board clears pinned selection
             var board = document.getElementById('board');
