@@ -896,6 +896,9 @@ function enableDrag (el, board) {
           data.kc_trial = 'circles_game';
           data.scores = Object.assign({}, SCORES);
           data.total_score = ITEMS.reduce(function(acc,it){ return acc + (SCORES[it.id] || 0); }, 0);
+          data.item_order = window.KC_ITEM_ORDER
+  ? window.KC_ITEM_ORDER.slice()
+  : null;
         }
       };
       timeline.push(place_items_trial);
