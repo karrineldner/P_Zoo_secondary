@@ -517,7 +517,24 @@
         kc_trial: 'nature_type',
         saveAs: 'nature_choice',
         randomize_options: true,
-        prompt: 'Pick the picture that shows the type of nature you would like to spend the most time in?',
+        prompt: 'Pick the place you would like to spend the most time in',
+        gridClass: 'kc-optgrid-3',
+        options: [
+          { value: 'nature1', img: 'img/eucalypts.png' },
+          { value: 'nature2', img: 'img/city_scraper.png' },
+          { value: 'nature3', img: 'img/skyscraper_bare.png' },
+          { value: 'nature4', img: 'img/spring_WA.png' },
+          { value: 'nature5', img: 'img/Scary_forest.png' },
+          { value: 'nature6', img: 'img/Rose.png' },
+        ]
+      }));
+
+            timeline.push(makeImageGridQuestion({
+        id: 'nature_type_dislike',
+        kc_trial: 'nature_type_dislike',
+        saveAs: 'nature_choice_dislike',
+        randomize_options: true,
+        prompt: "Pick the place you definitely wouldn't want to spend time in",
         gridClass: 'kc-optgrid-3',
         options: [
           { value: 'nature1', img: 'img/eucalypts.png' },
@@ -533,7 +550,7 @@
         id: 'nature_importance',
         kc_trial: 'nature_importance',
         saveAs: 'nature_importance',
-        prompt: 'How important is nature to you?',
+        prompt: 'How important is the environment to you?',
         gridClass: 'kc-optgrid-5',
         options: [
           { value: 'Not important',           label: 'Not important',           img: 'img/ns_2_1.png' },
