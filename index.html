@@ -550,30 +550,27 @@ function makeAudioTextQuestion(q) {
           if (!btn.disabled) btn.click();
         }
       });
+btn.addEventListener('click', function(){
+  var v = (ta.value || '').trim();
 
-      btn.addEventListener('click', function(){
-        window.KC_TEXT_LAST = (ta.value || '').trim();
-        try { jsPsych.finishTrial(); } catch(e){}
-      });
+  // save immediately into the payload object used later
+  if (q.saveAs) window.KC_SURVEY[q.saveAs] = v;
 
-      update();
-      try { ta.focus(); } catch(e){}
-    },
+  try { jsPsych.finishTrial(); } catch(e){}
+});
 
-    on_finish: function(data) {
-      var resp = (window.KC_TEXT_LAST || '').trim();
-      data.response_text = resp;
+on_finish: function(data) {
+  var resp = (q.saveAs && window.KC_SURVEY[q.saveAs]) ? window.KC_SURVEY[q.saveAs] : '';
 
-      // Save to jsPsych "properties" so your payload can pick it up via getProp(...)
-      try {
-        if (q.saveAs) {
-          var o = {};
-          o[q.saveAs] = resp;
-          jsPsych.data.addProperties(o);
-        }
-      } catch(e){}
-    }
-  };
+  data.response_text = resp;
+
+  if (q.saveAs) {
+    try {
+      var o = {};
+      o[q.saveAs] = resp;
+      jsPsych.data.addProperties(o);
+    } catch(e){}
+  }
 }
 
 
