@@ -507,6 +507,74 @@
   };
 }
 
+function makeAudioTextQuestion(q) {
+  return {
+    type: 'html-button-response',
+    stimulus:
+      '<div class="kc-qwrap">' +
+        '<div class="kc-qprompt">' + q.prompt + '</div>' +
+        (q.sub ? ('<div class="kc-qsub">' + q.sub + '</div>') : '') +
+        (q.audio
+          ? '<audio id="kc-audio-q" controls preload="auto" style="width:100%; margin: 10px 0;">' +
+              '<source src="' + q.audio + '" type="audio/mp3">' +
+              'Your browser does not support audio.' +
+            '</audio>'
+          : '') +
+        '<textarea id="kc-text-response" rows="5" style="width:100%; font-size:1.05rem; padding:12px; border-radius:10px; border:2px solid rgba(0,0,0,0.15);" placeholder="' + (q.placeholder || 'Type your answer here...') + '"></textarea>' +
+      '</div>',
+    choices: ['Continue'],
+    button_html: '<button class="jspsych-btn" id="kc-text-continue" disabled style="display:none">%choice%</button>',
+    response_ends_trial: false,
+    data: { kc_trial: q.kc_trial || 'audio_text', question_id: q.id },
+
+    on_load: function() {
+      var ta = document.getElementById('kc-text-response');
+      var btn = document.getElementById('kc-text-continue');
+      if (!ta || !btn) return;
+
+      function update() {
+        var v = (ta.value || '').trim();
+        if (v.length > 0) {
+          btn.disabled = false;
+          btn.style.display = '';
+        } else {
+          btn.disabled = true;
+          btn.style.display = 'none';
+        }
+      }
+
+      ta.addEventListener('input', update);
+      ta.addEventListener('keydown', function(e){
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          if (!btn.disabled) btn.click();
+        }
+      });
+
+      btn.addEventListener('click', function(){
+        window.KC_TEXT_LAST = (ta.value || '').trim();
+        try { jsPsych.finishTrial(); } catch(e){}
+      });
+
+      update();
+      try { ta.focus(); } catch(e){}
+    },
+
+    on_finish: function(data) {
+      var resp = (window.KC_TEXT_LAST || '').trim();
+      data.response_text = resp;
+
+      // Save to jsPsych "properties" so your payload can pick it up via getProp(...)
+      try {
+        if (q.saveAs) {
+          var o = {};
+          o[q.saveAs] = resp;
+          jsPsych.data.addProperties(o);
+        }
+      } catch(e){}
+    }
+  };
+}
 
 
       // ======= PAGE 1–3 (BEFORE GAME) =======
@@ -522,7 +590,7 @@
           { value: 'None of my time',           label: 'None of my time',           img: 'img/ns_1_1.png' },
           { value: 'A little of my time',  label: 'A little of my time',  img: 'img/ns1_2.png' },
           { value: 'Half of my time',       label: 'Half of my time',       img: 'img/ns1_3.png' },
-          { value: 'Most of my time',          label: 'Most of my time',          img: 'img/ns1_4.png' },
+          { value: 'Most of my time',          label: 'Most of my time',          img: 'img/Ns1_4.png' },
           { value: 'All of my time',          label: 'All of my time',          img: 'img/Ns_1_5.png' }
         ]
       }));
@@ -549,7 +617,7 @@
         kc_trial: 'nature_type',
         saveAs: 'nature_choice',
         randomize_options: true,
-        prompt: 'Pick the place you would like to spend the most time in',
+        prompt: 'Pick the environment you would like to spend the most time in',
         gridClass: 'kc-optgrid-3',
         options: [
           { value: 'nature1', img: 'img/eucalypts.png' },
@@ -561,12 +629,22 @@
         ]
       }));
 
+      timeline.push(makeAudioTextQuestion({
+  id: 'nature_like_text',
+  kc_trial: 'nature_like_text',
+  saveAs: 'nature_like_text',          // this becomes the column name in Sheets
+  prompt: 'Tell us what you like about this kind of environment.',
+  sub: 'Listen to the audio, then write your answer.',
+  audio: 'mp3/nature_like_prompt.mp3', // <-- your audio file path
+  placeholder: 'Write a few words or 1-3 sentences to continue...'
+}));
+
             timeline.push(makeImageGridQuestion({
         id: 'nature_type_dislike',
         kc_trial: 'nature_type_dislike',
         saveAs: 'nature_choice_dislike',
         randomize_options: true,
-        prompt: "Pick the place you would least like to visit",
+        prompt: "Pick the environment you would least like to visit",
         gridClass: 'kc-optgrid-3',
         options: [
           { value: 'nature1', img: 'img/eucalypts.png' },
@@ -577,6 +655,17 @@
           { value: 'nature6', img: 'img/Rose.png' },
         ]
       }));
+
+      
+      timeline.push(makeAudioTextQuestion({
+  id: 'nature_dislike_text',
+  kc_trial: 'nature_dislike_text',
+  saveAs: 'nature_dislike_text',          // this becomes the column name in Sheets
+  prompt: 'Tell us what you dislike about this kind of environment.',
+  sub: 'Listen to the audio, then write your answer.',
+  audio: 'mp3/nature_dislike_prompt.mp3', // <-- your audio file path
+  placeholder: 'Write a few words or 1-3 sentences to continue...'
+}));
 
 
 timeline.push(makeImageGridQuestion({
