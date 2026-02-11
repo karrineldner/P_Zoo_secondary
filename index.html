@@ -642,7 +642,7 @@ function makeAudioTextQuestion(q) {
   prompt: 'Tell us what you like about this kind of environment?',
   sub: 'Listen to the audio, then write your answer.',
   audio: 'mp3/nature_like_prompt.mp3', // <-- your audio file path
-  placeholder: 'Write a few words or 1-3 sentences to continue...'
+  placeholder: 'Write a few words or sentences to continue...'
 }));
 
             timeline.push(makeImageGridQuestion({
@@ -651,7 +651,7 @@ function makeAudioTextQuestion(q) {
         saveAs: 'nature_choice_dislike',
         randomize_options: true,
         prompt: "Pick the environment you would LEAST like to visit for a day",
-        gridClass: 'kc-optgrid-3',
+        gridClass: 'kc-optgrid-4',
         options: [
           { value: 'nature1', img: 'img/eucalypts.png' },
           { value: 'nature2', img: 'img/city_scraper.png' },
@@ -659,6 +659,8 @@ function makeAudioTextQuestion(q) {
           { value: 'nature4', img: 'img/spring_WA.png' },
           { value: 'nature5', img: 'img/Scary_forest.png' },
           { value: 'nature6', img: 'img/Rose.png' },
+          { value: 'nature7', img: 'img/nature7.png' },
+          { value: 'nature8', img: 'img/nature8.png' },
         ]
       }));
 
