@@ -509,6 +509,11 @@
       if (q.saveAs) {
         data[q.saveAs] = val;
         window.KC_SURVEY[q.saveAs] = val;
+          // ✅ ADD THESE:
+  window.KC_SURVEY[q.saveAs + '_img'] = sel ? sel.img : null;  // e.g. nature_choice_img
+  window.KC_SURVEY[q.saveAs + '_label'] = sel ? (sel.label || '') : null; // optional
+}
+
 
         try {
           var o = {};
@@ -523,18 +528,38 @@
 function makeAudioTextQuestion(q) {
   return {
     type: 'html-button-response',
-    stimulus:
-      '<div class="kc-qwrap">' +
-        '<div class="kc-qprompt">' + q.prompt + '</div>' +
-        (q.sub ? ('<div class="kc-qsub">' + q.sub + '</div>') : '') +
-        (q.audio
-          ? '<audio id="kc-audio-q" controls preload="auto" style="width:100%; margin: 10px 0;">' +
-              '<source src="' + q.audio + '" type="audio/mp3">' +
-              'Your browser does not support audio.' +
-            '</audio>'
-          : '') +
-        '<textarea id="kc-text-response" rows="5" style="width:100%; font-size:1.05rem; padding:12px; border-radius:10px; border:2px solid rgba(0,0,0,0.15);" placeholder="' + (q.placeholder || 'Type your answer here...') + '"></textarea>' +
-      '</div>',
+    function makeAudioTextQuestion(q) {
+  return {
+    type: 'html-button-response',
+
+    stimulus: function () {
+      var pickedImg = (q.showPickedImgFrom && window.KC_SURVEY[q.showPickedImgFrom + '_img'])
+        ? window.KC_SURVEY[q.showPickedImgFrom + '_img']
+        : null;
+
+      return (
+        '<div class="kc-qwrap">' +
+          '<div class="kc-qprompt">' + q.prompt + '</div>' +
+          (pickedImg
+            ? '<div style="margin:12px 0;">' +
+                '<img src="' + pickedImg + '" alt="Your chosen environment" ' +
+                     'style="max-width:100%; height:auto; border-radius:12px; border:2px solid rgba(0,0,0,0.12);">' +
+              '</div>'
+            : ''
+          ) +
+          (q.sub ? ('<div class="kc-qsub">' + q.sub + '</div>') : '') +
+          (q.audio
+            ? '<audio id="kc-audio-q" controls preload="auto" style="width:100%; margin: 10px 0;">' +
+                '<source src="' + q.audio + '" type="audio/mp3">' +
+                'Your browser does not support audio.' +
+              '</audio>'
+            : '') +
+          '<textarea id="kc-text-response" rows="5" style="width:100%; font-size:1.05rem; padding:12px; border-radius:10px; border:2px solid rgba(0,0,0,0.15);" ' +
+            'placeholder="' + (q.placeholder || 'Type your answer here...') + '"></textarea>' +
+        '</div>'
+      );
+    },
+
     choices: ['Continue'],
     button_html: '<button class="jspsych-btn" id="kc-text-continue" disabled style="display:none">%choice%</button>',
     response_ends_trial: false,
@@ -547,18 +572,14 @@ function makeAudioTextQuestion(q) {
 
       function update() {
         var v = (ta.value || '').trim();
-        if (v.length > 0) { btn.disabled = false; btn.style.display = ''; }
-        else { btn.disabled = true; btn.style.display = 'none'; }
+        btn.disabled = (v.length === 0);
+        btn.style.display = (v.length === 0) ? 'none' : '';
       }
-
       ta.addEventListener('input', update);
 
       btn.addEventListener('click', function(){
         var v = (ta.value || '').trim();
-
-        // save into KC_SURVEY so it ends up in your payload Object.assign(..., window.KC_SURVEY)
         if (q.saveAs) window.KC_SURVEY[q.saveAs] = v;
-
         try { jsPsych.finishTrial(); } catch(e){}
       });
 
@@ -570,17 +591,19 @@ function makeAudioTextQuestion(q) {
       var resp = (q.saveAs && window.KC_SURVEY[q.saveAs]) ? window.KC_SURVEY[q.saveAs] : '';
       data.response_text = resp;
 
-      // also add to jsPsych properties (optional but useful)
+      // optional: also store which image was shown on this page
+      if (q.showPickedImgFrom) data.shown_img = window.KC_SURVEY[q.showPickedImgFrom + '_img'] || null;
+
       if (q.saveAs) {
         try {
-          var o = {};
-          o[q.saveAs] = resp;
+          var o = {}; o[q.saveAs] = resp;
           jsPsych.data.addProperties(o);
         } catch(e){}
       }
     }
   };
 }
+
 
 
       // ======= PAGE 1–3 (BEFORE GAME) =======
