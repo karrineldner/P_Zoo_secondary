@@ -533,8 +533,10 @@ function makeAudioTextQuestion(q) {
           '<div class="kc-qprompt">' + q.prompt + '</div>' +
           (pickedImg
             ? '<div style="margin:12px 0;">' +
-                '<img src="' + pickedImg + '" alt="Your chosen environment" ' +
-                     'style="max-width:100%; height:auto; border-radius:12px; border:2px solid rgba(0,0,0,0.12);">' +
+ '<img src="' + pickedImg + '" alt="Your chosen environment" ' +
+     'style="max-width:min(100%,1024px); max-height:1024px; width:auto; height:auto; border-radius:12px; border:2px solid rgba(0,0,0,0.12);">' +
+
+
               '</div>'
             : ''
           ) +
