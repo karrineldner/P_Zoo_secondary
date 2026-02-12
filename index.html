@@ -593,11 +593,11 @@ function makeAudioTextQuestion(q) {
         prompt: 'If you could choose, <br> how much time would you spend outside in nature?',
         gridClass: 'kc-optgrid-5',
         options: [
-          { value: 'None <br> of my time',           label: 'None of my time',           img: 'img/ns_1_1.png' },
-          { value: 'A little <br> of my time',  label: 'A little of my time',  img: 'img/ns1_2.png' },
-          { value: 'Half <br> of my time',       label: 'Half of my time',       img: 'img/ns1_3.png' },
-          { value: 'Most <br>of my time',          label: 'Most of my time',          img: 'img/Ns1_4.png' },
-          { value: 'All <br>of my time',          label: 'All of my time',          img: 'img/Ns_1_5.png' }
+          { value: 'None of my time',           label: 'None of my time',           img: 'img/ns_1_1.png' },
+          { value: 'A little of my time',  label: 'A little of my time',  img: 'img/ns1_2.png' },
+          { value: 'Half of my time',       label: 'Half of my time',       img: 'img/ns1_3.png' },
+          { value: 'Most of my time',          label: 'Most of my time',          img: 'img/Ns1_4.png' },
+          { value: 'All of my time',          label: 'All of my time',          img: 'img/Ns_1_5.png' }
         ]
       }));
 
@@ -608,11 +608,11 @@ function makeAudioTextQuestion(q) {
         prompt: 'How important is the environment to you?',
         gridClass: 'kc-optgrid-5',
         options: [
-          { value: 'Not <br> important',           label: 'Not at all important',           img: 'img/ns_2_1.png' },
-          { value: 'A little bit <br> important',  label: 'A little bit important',  img: 'img/ns_2_2.png' },
-          { value: 'Kind of <br> important',       label: 'Kind of important',       img: 'img/ns_2_3.png' },
-          { value: 'Mostly <br> important',          label: 'Mostly important',          img: 'img/ns_2_4.png' },
-          { value: 'Very <br> important',          label: 'Very important',          img: 'img/ns_2_5.png' }
+          { value: 'Not important',           label: 'Not at all <br> important',           img: 'img/ns_2_1.png' },
+          { value: 'A little bit important',  label: 'A little bit <br> important',  img: 'img/ns_2_2.png' },
+          { value: 'Kind of important',       label: 'Kind of <br> important',       img: 'img/ns_2_3.png' },
+          { value: 'Mostly important',          label: 'Mostly <br> important',          img: 'img/ns_2_4.png' },
+          { value: 'Very important',          label: 'Very <br> important',          img: 'img/ns_2_5.png' }
         ]
       }));
 
@@ -672,7 +672,7 @@ function makeAudioTextQuestion(q) {
   prompt: 'Tell us what you dislike about this kind of environment.',
   sub: 'Listen to the audio, then write your answer.',
   audio: 'mp3/nature_dislike_prompt.mp3', // <-- your audio file path
-  placeholder: 'Write a few words or 1-3 sentences to continue...'
+  placeholder: 'Write a few words or sentences to continue...'
 }));
 
 
@@ -685,7 +685,7 @@ timeline.push(makeImageGridQuestion({
   options: [
     { value: "1",   label: "I couldn't help at all",   img: 'img/Really_dontlike.png' },
     { value: "2",  label: 'I could help a tiny bit',  img: 'img/Dont_like.png' },
-    { value: "3",             label: "I'm not sure I could help",             img: 'img/Not_sure.png' },
+    { value: "3",             label: "I'm not sure if I could help",             img: 'img/Not_sure.png' },
     { value: '4',       label: 'I could help some',       img: 'img/Like_little.png' },
     { value: '5',   label: 'I could help very much',   img: 'img/Really_like.png' }
   ]
@@ -701,7 +701,7 @@ timeline.push(makeImageGridQuestion({
     { value: "1",   label: "I'd be very bad",   img: 'img/Really_dontlike.png' },
     { value: "2",  label: "I'd be a little bit bad",  img: 'img/Dont_like.png' },
     { value: "3",             label: "I'm not sure",             img: 'img/Not_sure.png' },
-    { value: "4",       label: "I'd be a  bit good",       img: 'img/Like_little.png' },
+    { value: "4",       label: "I'd be a bit good",       img: 'img/Like_little.png' },
     { value: "5",   label: "I'd be very good",   img: 'img/Really_like.png' }
   ]
 }));
@@ -741,7 +741,7 @@ timeline.push(makeImageGridQuestion({
   id: 'ownership_2_rev',
   kc_trial: 'ownership_2_rev',
   saveAs: 'ownership_2_rev',
-  prompt: 'Its important that I do my part to help my Habitats for Wildlife project',
+  prompt: 'Its important to do my part to help my Habitats for Wildlife project',
   gridClass: 'kc-optgrid-5',
   options: [
           { value: '1',           label: 'Not important',           img: 'img/ns_2_1.png' },
