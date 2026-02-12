@@ -611,7 +611,7 @@ function makeAudioTextQuestion(q) {
           { value: 'Not <br> important',           label: 'Not at all important',           img: 'img/ns_2_1.png' },
           { value: 'A little bit <br> important',  label: 'A little bit important',  img: 'img/ns_2_2.png' },
           { value: 'Kind of <br> important',       label: 'Kind of important',       img: 'img/ns_2_3.png' },
-          { value: 'Kind of <br> important',          label: 'Kind of important',          img: 'img/ns_2_4.png' },
+          { value: 'Mostly <br> important',          label: 'Mostly important',          img: 'img/ns_2_4.png' },
           { value: 'Very <br> important',          label: 'Very important',          img: 'img/ns_2_5.png' }
         ]
       }));
@@ -726,27 +726,27 @@ timeline.push(makeImageGridQuestion({
   id: 'ownership_1',
   kc_trial: 'ownership_1',
   saveAs: 'ownership_1',
-  prompt: 'Tell us how connected you feel to the Habitats project right now?',
+  prompt: 'How connected do you feel to your Habitats for Wildlife project right now?',
   gridClass: 'kc-optgrid-5',
   options: [
           { value: '1',           label: 'Not at all connected',           img: 'img/ns_2_1.png' },
           { value: '2',  label: 'A little bit connected',  img: 'img/ns_2_2.png' },
-          { value: '3',       label: 'Half connected',       img: 'img/ns_2_3.png' },
+          { value: '3',       label: 'Sort of connected',       img: 'img/ns_2_3.png' },
           { value: '4',          label: 'Mostly connected',          img: 'img/ns_2_4.png' },
           { value: '5',          label: 'Very connected',          img: 'img/ns_2_5.png' }
   ]
 }));
 
                   timeline.push(makeImageGridQuestion({
-  id: 'ownership_2',
-  kc_trial: 'ownership_2',
-  saveAs: 'ownership_2',
-  prompt: 'This year, it is important that I keep an eye on how our Habitats project is going',
+  id: 'ownership_2_rev',
+  kc_trial: 'ownership_2_rev',
+  saveAs: 'ownership_2_rev',
+  prompt: 'Its important that I do my part to help my Habitats for Wildlife project',
   gridClass: 'kc-optgrid-5',
   options: [
           { value: '1',           label: 'Not important',           img: 'img/ns_2_1.png' },
           { value: '2',  label: 'A little bit important',  img: 'img/ns_2_2.png' },
-          { value: '3',       label: 'Half important',       img: 'img/ns_2_3.png' },
+          { value: '3',       label: 'Sort of important',       img: 'img/ns_2_3.png' },
           { value: '4',          label: 'Mostly important',          img: 'img/ns_2_4.png' },
           { value: '5',          label: 'Very important',          img: 'img/ns_2_5.png' }
   ]
@@ -757,14 +757,14 @@ timeline.push(makeImageGridQuestion({
   id: 'ownership_3',
   kc_trial: 'ownership_3',
   saveAs: 'ownership_3',
-  prompt: "I would feel bad if I didn't help the Habitats project if something went wrong",
+  prompt: "My Habitats for Wildlife project feels like it belongs to me",
   gridClass: 'kc-optgrid-5',
   options: [
-          { value: '1',           label: 'Very bad',           img: 'img/ns_2_1.png' },
-          { value: '2',  label: 'A little bit bad',  img: 'img/ns_2_2.png' },
-          { value: '3',       label: 'Neither bad nor good',       img: 'img/ns_2_3.png' },
-          { value: '4',          label: 'A little okay',          img: 'img/ns_2_4.png' },
-          { value: '5',          label: 'Very okay',          img: 'img/ns_2_5.png' }
+          { value: '1',           label: 'Very much mine',           img: 'img/ns_2_1.png' },
+          { value: '2',  label: 'A little bit mine',  img: 'img/ns_2_2.png' },
+          { value: '3',       label: 'Maybe mine',       img: 'img/ns_2_3.png' },
+          { value: '4',          label: 'Not really mine',          img: 'img/ns_2_4.png' },
+          { value: '5',          label: 'Not at all mine',          img: 'img/ns_2_5.png' }
   ]
 }));
 
