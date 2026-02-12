@@ -695,7 +695,7 @@ timeline.push(makeImageGridQuestion({
   id: 'efficacy_2',
   kc_trial: 'efficacy_2',
   saveAs: 'efficacy_2',
-  prompt: 'I think I would be good at helping <br>the animals and plants that live near me',
+  prompt: 'I would be good at helping <br>the animals and plants that live near me',
   gridClass: 'kc-optgrid-5',
   options: [
     { value: "1",   label: "I'd be very bad",   img: 'img/Really_dontlike.png' },
@@ -707,17 +707,17 @@ timeline.push(makeImageGridQuestion({
 }));
 
       timeline.push(makeImageGridQuestion({
-  id: 'efficacy_3',
-  kc_trial: 'efficacy_3',
-  saveAs: 'efficacy_3',
+  id: 'efficacy_3_rev',
+  kc_trial: 'efficacy_3_rev',
+  saveAs: 'efficacy_3_rev',
   prompt: 'The small things I do help make the environment better',
   gridClass: 'kc-optgrid-5',
   options: [
-    { value: "1",   label: "They don't help at all",   img: 'img/Really_dontlike.png' },
+     { value: '5',   label: "They help a lot",   img: 'img/Really_like.png' },
+      { value: '4',       label: "They help a fair bit",       img: 'img/Like_little.png' },
+       { value: "3",             label: "They can maybe help",             img: 'img/Not_sure.png' },
     { value: '2',  label: "They don't help much",  img: 'img/Dont_like.png' },
-    { value: "3",             label: "They can maybe help",             img: 'img/Not_sure.png' },
-    { value: '4',       label: "They help a fair bit",       img: 'img/Like_little.png' },
-    { value: '5',   label: "They help a lot",   img: 'img/Really_like.png' }
+        { value: "1",   label: "They don't help at all",   img: 'img/Really_dontlike.png' },
   ]
 }));
 
