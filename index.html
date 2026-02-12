@@ -466,12 +466,8 @@
           (opt.label ? ('<div class="kc-optlabel">' + opt.label + '</div>') : '');
 
         d.addEventListener('click', function(){
-          try {
-            document.querySelectorAll('.kc-opt').forEach(function(x){
-              x.classList.remove('selected');
-            });
-            d.classList.add('selected');
-          } catch(e){}
+          document.querySelectorAll('.kc-opt').forEach(function(x){ x.classList.remove('selected'); });
+          d.classList.add('selected');
 
           window.KC_LAST_SELECTION = {
             value: opt.value,
@@ -505,15 +501,13 @@
 
       data.option_order = window.KC_OPTION_ORDER ? window.KC_OPTION_ORDER.slice() : null;
 
-      // Save in a guaranteed place
       if (q.saveAs) {
         data[q.saveAs] = val;
         window.KC_SURVEY[q.saveAs] = val;
-          // ✅ ADD THESE:
-  window.KC_SURVEY[q.saveAs + '_img'] = sel ? sel.img : null;  // e.g. nature_choice_img
-  window.KC_SURVEY[q.saveAs + '_label'] = sel ? (sel.label || '') : null; // optional
-}
 
+        // store the selected image for later pages
+        window.KC_SURVEY[q.saveAs + '_img'] = sel ? sel.img : null;
+        window.KC_SURVEY[q.saveAs + '_label'] = sel ? (sel.label || '') : null;
 
         try {
           var o = {};
@@ -526,9 +520,6 @@
 }
 
 function makeAudioTextQuestion(q) {
-  return {
-    type: 'html-button-response',
-    function makeAudioTextQuestion(q) {
   return {
     type: 'html-button-response',
 
@@ -554,7 +545,8 @@ function makeAudioTextQuestion(q) {
                 'Your browser does not support audio.' +
               '</audio>'
             : '') +
-          '<textarea id="kc-text-response" rows="5" style="width:100%; font-size:1.05rem; padding:12px; border-radius:10px; border:2px solid rgba(0,0,0,0.15);" ' +
+          '<textarea id="kc-text-response" rows="5" ' +
+            'style="width:100%; font-size:1.05rem; padding:12px; border-radius:10px; border:2px solid rgba(0,0,0,0.15);" ' +
             'placeholder="' + (q.placeholder || 'Type your answer here...') + '"></textarea>' +
         '</div>'
       );
@@ -575,6 +567,7 @@ function makeAudioTextQuestion(q) {
         btn.disabled = (v.length === 0);
         btn.style.display = (v.length === 0) ? 'none' : '';
       }
+
       ta.addEventListener('input', update);
 
       btn.addEventListener('click', function(){
@@ -591,8 +584,9 @@ function makeAudioTextQuestion(q) {
       var resp = (q.saveAs && window.KC_SURVEY[q.saveAs]) ? window.KC_SURVEY[q.saveAs] : '';
       data.response_text = resp;
 
-      // optional: also store which image was shown on this page
-      if (q.showPickedImgFrom) data.shown_img = window.KC_SURVEY[q.showPickedImgFrom + '_img'] || null;
+      if (q.showPickedImgFrom) {
+        data.shown_img = window.KC_SURVEY[q.showPickedImgFrom + '_img'] || null;
+      }
 
       if (q.saveAs) {
         try {
