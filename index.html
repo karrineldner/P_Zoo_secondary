@@ -1131,16 +1131,37 @@ timeline.push(makeImageGridQuestion({
       // ======= INSTRUCTIONS (GAME) =======
       var instructions = {
         type: 'html-button-response',
-        stimulus:
-          '<div style="max-width:820px">' +
-            '<h2>Welcome to the circles game! <br>You can play the audio to hear the instructions. <br> Tell us what YOU care about! <br> When you care about something, you want to help it, take care of it, or make sure it is okay. <br> Things you care about a LOT go in the green circle <br> Things you care about A LITTLE BIT go in the orange circle. <br> Things you DO NOT CARE ABOUT go in the red circle. </h2>' +
-            '<img src="img/instructions_page.png" alt="Instructions" style="width:100%;height:auto;margin-top:8px;border-radius:8px" />' +
-            '<audio id="kc-welcome-audio" preload="auto" controls style="width:100%;margin-top:8px;display:block">' +
-              '<source type="audio/mp3" src="mp3/Circles_game_instructions.mp3">' +
-              'Your browser does not support the audio element.' +
-            '</audio>' +
-            '<div id="kc-instr-status" style="margin-top:12px;font-weight:600;">Please play and listen to the audio — the green flag will appear when it finishes.</div>' +
-          '</div>',
+      stimulus:
+  '<div style="max-width:820px">' +
+
+    // Smaller font (normal)
+    '<div style="font-size:1.1rem; font-weight:400;">Welcome to the circles game</div>' +
+    '<div style="font-size:1.1rem; font-weight:400;">You can play the audio to hear the instructions.</div>' +
+
+    '<br>' +
+
+    // Smaller font (bold)
+    '<div style="font-size:1.1rem; font-weight:800;">Tell us what YOU care about!</div>' +
+    '<div style="font-size:1.1rem; font-weight:800;">When you care about something, you want to help it, take care of it, or make sure it is okay.</div>' +
+
+    '<br>' +
+
+    // Current font size (bold)
+    '<div style="font-size:1.6rem; font-weight:800;">Things you care about a LOT go in the green circle.</div>' +
+    '<div style="font-size:1.6rem; font-weight:800;">Things you care about A LITTLE BIT go in the orange circle.</div>' +
+    '<div style="font-size:1.6rem; font-weight:800;">Things you DO NOT CARE about go in the red circle.</div>' +
+
+    '<img src="img/instructions_page.png" alt="Instructions" style="width:100%;height:auto;margin-top:8px;border-radius:8px" />' +
+
+    '<audio id="kc-welcome-audio" preload="auto" controls style="width:100%;margin-top:8px;display:block">' +
+      '<source type="audio/mp3" src="mp3/Circles_game_instructions.mp3">' +
+      'Your browser does not support the audio element.' +
+    '</audio>' +
+
+    '<div id="kc-instr-status" style="margin-top:12px;font-weight:600;">Please play and listen to the audio — the green flag will appear when it finishes.</div>' +
+
+  '</div>',
+
         button_html: '<button class="jspsych-btn flag-btn"><span class="sr-only">%choice%</span><svg class="kc-flag-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="#ffffff" d="M0 0h24v24H0z" fill="none"/><path fill="#28a745" d="M4 3h2v18H4zM6 3c4 0 4 2 8 2s4-2 8-2v9c-4 0-4 2-8 2s-4-2-8-2V3z"/></svg></button>',
         choices: ['I am ready!'],
         on_load: function() {
